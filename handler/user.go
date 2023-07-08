@@ -5,15 +5,10 @@ import (
 
 	"github.com/jeffwilkey/what-to-watch/database"
 	"github.com/jeffwilkey/what-to-watch/model"
+	"github.com/jeffwilkey/what-to-watch/services"
 
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/crypto/bcrypt"
 )
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
 
 // CreateUser new user
 func CreateUser(c *fiber.Ctx) error {
@@ -33,7 +28,7 @@ func CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	hash, err := hashPassword(user.Password)
+	hash, err := services.HashPassword(user.Password)
 
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"log"
-
 	"github.com/jeffwilkey/what-to-watch/config"
 	"github.com/jeffwilkey/what-to-watch/model"
 	"github.com/jeffwilkey/what-to-watch/services"
@@ -10,16 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
 )
-
-func CheckPasswordHash(password, hash string) bool {
-	log.Println("password: ", password, "hash: ", hash)
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-
-	log.Println(err)
-	return err == nil
-}
 
 func Login(c *fiber.Ctx) error {
 	type LoginInput struct {
@@ -59,7 +48,7 @@ func Login(c *fiber.Ctx) error {
 		}
 	}
 
-	if !CheckPasswordHash(password, userData.Password) {
+	if !services.CheckPasswordHash(password, userData.Password) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Invalid password", "data": nil })
 	}
 
@@ -69,7 +58,7 @@ func Login(c *fiber.Ctx) error {
 	claims["email"] = userData.Email
 	claims["firstName"] = userData.FirstName
 	claims["lastName"] = userData.LastName
-	claims["user_id"] = userData.ID
+	claims["userId"] = userData.ID
 	
 	t, err := token.SignedString([]byte(config.JWTSecret))
 	if err != nil {
