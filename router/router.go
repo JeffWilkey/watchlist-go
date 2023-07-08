@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/jeffwilkey/what-to-watch/handler"
+	"github.com/jeffwilkey/watchlist-go/handler"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"

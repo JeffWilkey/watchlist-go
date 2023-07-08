@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/jeffwilkey/what-to-watch/config"
-	"github.com/jeffwilkey/what-to-watch/database"
-	"github.com/jeffwilkey/what-to-watch/router"
+	"github.com/jeffwilkey/watchlist-go/config"
+	"github.com/jeffwilkey/watchlist-go/database"
+	"github.com/jeffwilkey/watchlist-go/router"
 
 	"github.com/gofiber/fiber/v2"
 )

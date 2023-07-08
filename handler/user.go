@@ -3,9 +3,9 @@ package handler
 import (
 	"fmt"
 
-	"github.com/jeffwilkey/what-to-watch/database"
-	"github.com/jeffwilkey/what-to-watch/model"
-	"github.com/jeffwilkey/what-to-watch/services"
+	"github.com/jeffwilkey/watchlist-go/database"
+	"github.com/jeffwilkey/watchlist-go/model"
+	"github.com/jeffwilkey/watchlist-go/services"
 
 	"github.com/gofiber/fiber/v2"
 )

@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/jeffwilkey/what-to-watch/config"
+	"github.com/jeffwilkey/watchlist-go/config"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

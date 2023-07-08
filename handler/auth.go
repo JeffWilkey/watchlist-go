@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/jeffwilkey/what-to-watch/config"
-	"github.com/jeffwilkey/what-to-watch/model"
-	"github.com/jeffwilkey/what-to-watch/services"
+	"github.com/jeffwilkey/watchlist-go/config"
+	"github.com/jeffwilkey/watchlist-go/model"
+	"github.com/jeffwilkey/watchlist-go/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"

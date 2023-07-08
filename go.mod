@@ -1,4 +1,4 @@
-module github.com/jeffwilkey/what-to-watch
+module github.com/jeffwilkey/watchlist-go
 
 go 1.20
 
