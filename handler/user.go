@@ -8,6 +8,7 @@ import (
 	"github.com/jeffwilkey/watchlist-go/model"
 	"github.com/jeffwilkey/watchlist-go/service"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,7 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// CreateUser new user
 func CreateUser(c *fiber.Ctx) error {
 	type NewUser struct {
 		FirstName string `json:"firstName"`
@@ -30,12 +30,22 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid request", "data": err})
 	}
 
+	// Validate user input
+	validate := validator.New()
+	err := validate.Struct(user)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Validation failed", "data": err.Error()})
+	}
+
+	// Hash password
 	hash, err := service.HashPassword(user.Password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Error hashing password", "data": err})
 	}
 
 	user.Password = hash
+
+	// Insert user into database
 	insertionResult, err := collection.InsertOne(c.Context(), &user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't create user", "data": err.Error()})
@@ -43,6 +53,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 	fmt.Printf("User created with _id: %v\n", insertionResult.InsertedID)
 
+	// Return user DTO
 	newUser := NewUser{
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
@@ -54,8 +65,8 @@ func CreateUser(c *fiber.Ctx) error {
 
 func UpdateUser(c *fiber.Ctx) error {
 	type UpdateUserInput struct {
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
+		FirstName string `json:"firstName" validate:"required,min=1,max=32"`
+		LastName  string `json:"lastName" validate:"required,min=2,max=32"`
 	}
 	type UserData struct {
 		ID        primitive.ObjectID `json:"id"`
@@ -71,14 +82,24 @@ func UpdateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err})
 	}
 
+	// Validate user input
+	validate := validator.New()
+	err := validate.Struct(input)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Validation failed", "data": err.Error()})
+	}
+
+	// Format user ID from param and get token
 	idParam := c.Params("id")
 	id, err := primitive.ObjectIDFromHex(idParam)
 	token := c.Locals("user").(*jwt.Token)
 
+	// Validate JWT token
 	if !service.ValidToken(token, idParam) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Unauthorized", "data": nil})
 	}
 
+	// Update user in database
 	collection := database.Mongo.Db.Collection("users")
 	var user model.User
 
@@ -102,8 +123,10 @@ func UpdateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't update user", "data": err})
 	}
 
+	// Decode updated user
 	err = updateResult.Decode(&user)
 
+	// Return user DTO
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't decode user", "data": err})
 	} else {
