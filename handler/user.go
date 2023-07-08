@@ -33,7 +33,7 @@ func CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	hash, err := hashPassword("password")
+	hash, err := hashPassword(user.Password)
 
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{

@@ -3,10 +3,10 @@ package database
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
-	"github.com/joho/godotenv"
+	"github.com/jeffwilkey/what-to-watch/config"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -19,13 +19,8 @@ type MongoInstance struct {
 var Mongo MongoInstance
 
 func ConnectDb() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	dbName := os.Getenv("DB_NAME")
-	mongoURI := os.Getenv("MONGO_URI")
+	dbName := config.DBName
+	mongoURI := config.MongoURI
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 

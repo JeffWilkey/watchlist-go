@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/jeffwilkey/what-to-watch/config"
 	"github.com/jeffwilkey/what-to-watch/database"
 	"github.com/jeffwilkey/what-to-watch/router"
 
@@ -11,13 +12,13 @@ import (
 
 func main() {
 	app := fiber.New()
+	
+	// Initialize config and database	
+	config.Init()
 	database.ConnectDb()
 
+	// Setup routes
 	router.SetupRoutes(app)
-	
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
-	});
 
 	log.Fatalln(app.Listen(":3000"))
 }
