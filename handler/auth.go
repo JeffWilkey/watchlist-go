@@ -3,10 +3,10 @@ package handler
 import (
 	"github.com/jeffwilkey/watchlist-go/config"
 	"github.com/jeffwilkey/watchlist-go/model"
-	"github.com/jeffwilkey/watchlist-go/services"
+	"github.com/jeffwilkey/watchlist-go/service"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -34,7 +34,7 @@ func Login(c *fiber.Ctx) error {
 	password := input.Password
 	user := new(model.User)
 	
-	user = services.FindUserByEmail(email)
+	user = service.FindUserByEmail(email)
 
 	if user == nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil })
@@ -48,7 +48,7 @@ func Login(c *fiber.Ctx) error {
 		}
 	}
 
-	if !services.CheckPasswordHash(password, userData.Password) {
+	if !service.CheckPasswordHash(password, userData.Password) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Invalid password", "data": nil })
 	}
 

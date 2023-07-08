@@ -3,14 +3,16 @@ module github.com/jeffwilkey/watchlist-go
 go 1.20
 
 require (
+	github.com/gofiber/contrib/jwt v1.0.2
 	github.com/gofiber/fiber/v2 v2.47.0
-	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/joho/godotenv v1.5.1
 	go.mongodb.org/mongo-driver v1.12.0
 	golang.org/x/crypto v0.7.0
 )
 
 require (
+	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
