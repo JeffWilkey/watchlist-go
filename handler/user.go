@@ -140,3 +140,30 @@ func UpdateUser(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"status": "success", "message": "User updated", "data": userData})
 }
+
+func DeleteUser(c *fiber.Ctx) error {
+	// Format user ID from param and get token
+	idParam := c.Params("id")
+	id, err := primitive.ObjectIDFromHex(idParam)
+	token := c.Locals("user").(*jwt.Token)
+
+	// Validate JWT token
+	if !service.ValidToken(token, idParam) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Unauthorized", "data": nil})
+	}
+
+	// Delete user from database
+	collection := database.Mongo.Db.Collection("users")
+
+	filter := bson.D{{Key: "_id", Value: id}}
+	deleteResult, err := collection.DeleteOne(c.Context(), filter)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't delete user", "data": err})
+	}
+
+	if deleteResult.DeletedCount == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "User deleted", "data": nil})
+}
