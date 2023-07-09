@@ -1,8 +1,7 @@
 package service
 
 import (
-	"context"
-
+	"github.com/gofiber/fiber/v2"
 	"github.com/jeffwilkey/watchlist-go/database"
 	"github.com/jeffwilkey/watchlist-go/model"
 
@@ -20,12 +19,12 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func FindUserByEmail(email string) (*model.User) {
+func FindUserByEmail(c *fiber.Ctx, email string) *model.User {
 	collection := database.Mongo.Db.Collection("users")
 
 	user := new(model.User)
 
-	collection.FindOne(context.TODO(), model.User{Email: email}).Decode(&user)
+	collection.FindOne(c.Context(), model.User{Email: email}).Decode(&user)
 
 	return user
 }
