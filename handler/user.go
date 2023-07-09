@@ -5,6 +5,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jeffwilkey/watchlist-go/database"
+	"github.com/jeffwilkey/watchlist-go/dto"
 	"github.com/jeffwilkey/watchlist-go/model"
 	"github.com/jeffwilkey/watchlist-go/service"
 
@@ -17,12 +18,6 @@ import (
 )
 
 func CreateUser(c *fiber.Ctx) error {
-	type NewUser struct {
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-	}
-
 	collection := database.Mongo.Db.Collection("users")
 	user := new(model.User)
 
@@ -53,14 +48,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 	fmt.Printf("User created with _id: %v\n", insertionResult.InsertedID)
 
-	// Return user DTO
-	newUser := NewUser{
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": "Created user", "data": newUser})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": "Created user", "data": dto.CreateUserResponse(*user)})
 }
 
 func UpdateUser(c *fiber.Ctx) error {
@@ -68,15 +56,8 @@ func UpdateUser(c *fiber.Ctx) error {
 		FirstName string `json:"firstName" validate:"required,min=1,max=32"`
 		LastName  string `json:"lastName" validate:"required,min=2,max=32"`
 	}
-	type UserData struct {
-		ID        primitive.ObjectID `json:"id"`
-		FirstName string             `json:"firstName"`
-		LastName  string             `json:"lastName"`
-		Email     string             `json:"email"`
-	}
 
 	var input UpdateUserInput
-	var userData UserData
 
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err})
@@ -129,16 +110,9 @@ func UpdateUser(c *fiber.Ctx) error {
 	// Return user DTO
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't decode user", "data": err})
-	} else {
-		userData = UserData{
-			ID:        user.ID,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			Email:     user.Email,
-		}
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "User updated", "data": userData})
+	return c.JSON(fiber.Map{"status": "success", "message": "User updated", "data": dto.CreateUserResponse(user)})
 }
 
 func DeleteUser(c *fiber.Ctx) error {
@@ -165,5 +139,5 @@ func DeleteUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "User deleted", "data": nil})
+	return c.Status(fiber.StatusNoContent).JSON(fiber.Map{"status": "success", "message": "User deleted", "data": nil})
 }
