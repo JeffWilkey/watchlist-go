@@ -11,8 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CreateUser(c *fiber.Ctx) error {
@@ -39,12 +37,7 @@ func CreateUser(c *fiber.Ctx) error {
 }
 
 func UpdateUser(c *fiber.Ctx) error {
-	type UpdateUserInput struct {
-		FirstName string `json:"firstName" validate:"required,min=1,max=32"`
-		LastName  string `json:"lastName" validate:"required,min=2,max=32"`
-	}
-
-	var input UpdateUserInput
+	var input dto.UserUpdateRequest
 
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err})
@@ -68,35 +61,10 @@ func UpdateUser(c *fiber.Ctx) error {
 	}
 
 	// Update user in database
-	collection := database.Mongo.Db.Collection("users")
 	var user model.User
-
-	filter := bson.D{{Key: "_id", Value: id}}
-	update := bson.D{{Key: "$set", Value: bson.D{
-		{Key: "firstName", Value: input.FirstName},
-		{Key: "lastName", Value: input.LastName},
-	}}}
-	after := options.After
-	opt := options.FindOneAndUpdateOptions{
-		ReturnDocument: &after,
-	}
-
-	updateResult := collection.FindOneAndUpdate(c.Context(), filter, update, &opt)
-	err = updateResult.Err()
-
+	status, err := service.UpdateUser(c, id, input, &user)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't update user", "data": err})
-	}
-
-	// Decode updated user
-	err = updateResult.Decode(&user)
-
-	// Return user DTO
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't decode user", "data": err})
+		return c.Status(status).JSON(fiber.Map{"status": "error", "message": err.Error(), "data": err})
 	}
 
 	return c.JSON(fiber.Map{"status": "success", "message": "User updated", "data": dto.CreateUserResponse(user)})
