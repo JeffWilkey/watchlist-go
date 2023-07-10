@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jeffwilkey/watchlist-go/database"
 	"github.com/jeffwilkey/watchlist-go/dto"
@@ -18,7 +16,6 @@ import (
 )
 
 func CreateUser(c *fiber.Ctx) error {
-	collection := database.Mongo.Db.Collection("users")
 	user := new(model.User)
 
 	if err := c.BodyParser(user); err != nil {
@@ -29,24 +26,14 @@ func CreateUser(c *fiber.Ctx) error {
 	validate := validator.New()
 	err := validate.Struct(user)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Validation failed", "data": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Validation failed", "data": err})
 	}
 
-	// Hash password
-	hash, err := service.HashPassword(user.Password)
+	// Create user in database w/ hashed password
+	err = service.CreateUser(c, user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Error hashing password", "data": err})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Error Creating User", "data": err})
 	}
-
-	user.Password = hash
-
-	// Insert user into database
-	insertionResult, err := collection.InsertOne(c.Context(), &user)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't create user", "data": err.Error()})
-	}
-
-	fmt.Printf("User created with _id: %v\n", insertionResult.InsertedID)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "message": "Created user", "data": dto.CreateUserResponse(*user)})
 }

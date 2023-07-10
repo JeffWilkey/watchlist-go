@@ -8,20 +8,24 @@ import (
 type MediaResponse struct {
 	ID          primitive.ObjectID `json:"id"`
 	Title       string             `json:"title"`
-	Year        string             `json:"year"`
 	Poster      string             `json:"poster"`
-	WatchlistID primitive.ObjectID `json:"watchlist"`
+	ReleaseDate primitive.DateTime `json:"releaseDate"`
+	Status      string             `json:"status"`
 	TmdbID      int                `json:"tmdbId"`
+	WatchlistID primitive.ObjectID `json:"watchlistId"`
+	CreatedAt   primitive.DateTime `json:"createdAt"`
 }
 
 func CreateMediaResponse(media model.Media) MediaResponse {
 	return MediaResponse{
 		ID:          media.ID,
 		Title:       media.Title,
-		Year:        media.Year,
 		Poster:      media.Poster,
-		WatchlistID: media.WatchlistID,
+		ReleaseDate: media.ReleaseDate,
+		Status:      media.Status,
 		TmdbID:      media.TmdbID,
+		WatchlistID: media.WatchlistID,
+		CreatedAt:   media.CreatedAt,
 	}
 }
 

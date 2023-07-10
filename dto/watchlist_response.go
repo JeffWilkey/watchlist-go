@@ -13,15 +13,6 @@ type WatchlistResponse struct {
 	Collaborators []primitive.ObjectID `json:"collaborators"`
 }
 
-type WatchlistWithMediaResponse struct {
-	ID            primitive.ObjectID   `json:"id"`
-	Name          string               `json:"name"`
-	Description   string               `json:"description"`
-	OwnerID       primitive.ObjectID   `json:"ownerId"`
-	Collaborators []primitive.ObjectID `json:"collaborators"`
-	Media         []MediaResponse      `json:"media"`
-}
-
 func CreateWatchlistResponse(watchlist model.Watchlist) WatchlistResponse {
 	return WatchlistResponse{
 		ID:            watchlist.ID,
@@ -29,17 +20,6 @@ func CreateWatchlistResponse(watchlist model.Watchlist) WatchlistResponse {
 		Description:   watchlist.Description,
 		OwnerID:       watchlist.OwnerID,
 		Collaborators: watchlist.Collaborators,
-	}
-}
-
-func CreateWatchlistWithMediaResponse(watchlist model.Watchlist, media []MediaResponse) WatchlistWithMediaResponse {
-	return WatchlistWithMediaResponse{
-		ID:            watchlist.ID,
-		Name:          watchlist.Name,
-		Description:   watchlist.Description,
-		OwnerID:       watchlist.OwnerID,
-		Collaborators: watchlist.Collaborators,
-		Media:         media,
 	}
 }
 
