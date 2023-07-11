@@ -80,10 +80,10 @@ func UpdateUser(c *fiber.Ctx, id primitive.ObjectID, input dto.UserUpdateRequest
 	return fiber.StatusOK, nil
 }
 
-func ValidToken(t *jwt.Token, id string) bool {
+func ValidToken(t *jwt.Token, id primitive.ObjectID) bool {
 	claims := t.Claims.(jwt.MapClaims)
 
-	return claims["userId"] == id
+	return claims["userId"] == id.Hex()
 }
 
 func hashPassword(password string) (string, error) {

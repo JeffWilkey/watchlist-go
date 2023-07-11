@@ -51,12 +51,11 @@ func UpdateUser(c *fiber.Ctx) error {
 	}
 
 	// Format user ID from param and get token
-	idParam := c.Params("id")
-	id, err := primitive.ObjectIDFromHex(idParam)
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 	token := c.Locals("user").(*jwt.Token)
 
 	// Validate JWT token
-	if !service.ValidToken(token, idParam) {
+	if !service.ValidToken(token, id) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Unauthorized", "data": nil})
 	}
 
@@ -72,12 +71,11 @@ func UpdateUser(c *fiber.Ctx) error {
 
 func DeleteUser(c *fiber.Ctx) error {
 	// Format user ID from param and get token
-	idParam := c.Params("id")
-	id, err := primitive.ObjectIDFromHex(idParam)
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 	token := c.Locals("user").(*jwt.Token)
 
 	// Validate JWT token
-	if !service.ValidToken(token, idParam) {
+	if !service.ValidToken(token, id) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Unauthorized", "data": nil})
 	}
 
