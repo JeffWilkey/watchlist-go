@@ -1,15 +1,13 @@
 package handler
 
 import (
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/jeffwilkey/watchlist-go/database"
 	"github.com/jeffwilkey/watchlist-go/dto"
 	"github.com/jeffwilkey/watchlist-go/model"
 	"github.com/jeffwilkey/watchlist-go/service"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -74,23 +72,20 @@ func DeleteUser(c *fiber.Ctx) error {
 	id, err := primitive.ObjectIDFromHex(c.Params("id"))
 	token := c.Locals("user").(*jwt.Token)
 
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid ID", "data": err})
+	}
+
 	// Validate JWT token
 	if !service.ValidToken(token, id) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Unauthorized", "data": nil})
 	}
 
 	// Delete user from database
-	collection := database.Mongo.Db.Collection("users")
-
-	filter := bson.D{{Key: "_id", Value: id}}
-	deleteResult, err := collection.DeleteOne(c.Context(), filter)
+	status, err := service.DeleteUser(c, id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't delete user", "data": err})
+		return c.Status(status).JSON(fiber.Map{"status": "error", "message": err.Error(), "data": err})
 	}
 
-	if deleteResult.DeletedCount == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "User not found", "data": nil})
-	}
-
-	return c.Status(fiber.StatusNoContent).JSON(fiber.Map{"status": "success", "message": "User deleted", "data": nil})
+	return c.Status(status).JSON(fiber.Map{"status": "success", "message": "User deleted", "data": nil})
 }

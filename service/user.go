@@ -21,6 +21,12 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
+func ValidToken(t *jwt.Token, id primitive.ObjectID) bool {
+	claims := t.Claims.(jwt.MapClaims)
+
+	return claims["userId"] == id.Hex()
+}
+
 func FindUserByEmail(c *fiber.Ctx, email string) *model.User {
 	collection := database.Mongo.Db.Collection("users")
 	user := new(model.User)
@@ -77,10 +83,16 @@ func UpdateUser(c *fiber.Ctx, id primitive.ObjectID, input dto.UserUpdateRequest
 	return fiber.StatusOK, nil
 }
 
-func ValidToken(t *jwt.Token, id primitive.ObjectID) bool {
-	claims := t.Claims.(jwt.MapClaims)
-
-	return claims["userId"] == id.Hex()
+func DeleteUser(c *fiber.Ctx, id primitive.ObjectID) (int, error) {
+	collection := database.Mongo.Db.Collection("users")
+	_, err := collection.DeleteOne(c.Context(), bson.M{"_id": id})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fiber.StatusNotFound, errors.New("User not found")
+		}
+		return fiber.StatusInternalServerError, err
+	}
+	return fiber.StatusNoContent, nil
 }
 
 func hashPassword(password string) (string, error) {

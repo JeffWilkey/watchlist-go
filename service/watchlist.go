@@ -80,3 +80,15 @@ func UpdateWatchlist(c *fiber.Ctx, id primitive.ObjectID, input dto.WatchlistUpd
 
 	return fiber.StatusOK, nil
 }
+
+func DeleteWatchlist(c *fiber.Ctx, id primitive.ObjectID) (int, error) {
+	collection := database.Mongo.Db.Collection("watchlists")
+	_, err := collection.DeleteOne(c.Context(), bson.M{"_id": id})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fiber.StatusNotFound, errors.New("Watchlist not found")
+		}
+		return fiber.StatusInternalServerError, err
+	}
+	return fiber.StatusNoContent, nil
+}

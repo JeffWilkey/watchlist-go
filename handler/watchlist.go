@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/jeffwilkey/watchlist-go/dto"
 	"github.com/jeffwilkey/watchlist-go/model"
 	"github.com/jeffwilkey/watchlist-go/service"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -88,5 +88,24 @@ func UpdateWatchlist(c *fiber.Ctx) error {
 }
 
 func DeleteWatchlist(c *fiber.Ctx) error {
-	return c.SendString("Delete watchlist")
+	// Format watchlist id from param and get token
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+	token := c.Locals("user").(*jwt.Token)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid watchlist id", "data": err})
+	}
+
+	// Validate JWT token
+	if !service.ValidToken(token, id) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": nil})
+	}
+
+	// Delete watchlist from database
+	status, err := service.DeleteWatchlist(c, id)
+	if err != nil {
+		return c.Status(status).JSON(fiber.Map{"status": "error", "message": err.Error(), "data": err})
+	}
+
+	return c.Status(status).JSON(fiber.Map{"status": "success", "message": "Deleted watchlist", "data": nil})
 }
