@@ -16,7 +16,7 @@ import (
 func CreateUser(c *fiber.Ctx) error {
 	user := new(model.User)
 
-	if err := c.BodyParser(user); err != nil {
+	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid request", "data": err})
 	}
 

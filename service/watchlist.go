@@ -13,6 +13,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func FindWatchlistById(c *fiber.Ctx, id primitive.ObjectID) (*model.Watchlist, error) {
+	collection := database.Mongo.Db.Collection("watchlists")
+	watchlist := new(model.Watchlist)
+
+	err := collection.FindOne(c.Context(), model.Watchlist{ID: id}).Decode(&watchlist)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, errors.New("Watchlist not found")
+		}
+		return nil, err
+	}
+	return watchlist, nil
+}
+
 func FindWatchlistsByOwnerId(c *fiber.Ctx, ownerId primitive.ObjectID) ([]model.Watchlist, error) {
 	watchlists := make([]model.Watchlist, 0)
 
@@ -40,17 +54,9 @@ func CreateWatchlist(c *fiber.Ctx, watchlist *model.Watchlist) error {
 
 func UpdateWatchlist(c *fiber.Ctx, id primitive.ObjectID, input dto.WatchlistUpdateRequest, watchlist *model.Watchlist) (int, error) {
 	collection := database.Mongo.Db.Collection("watchlists")
-	body := bson.M{}
-
-	if len(input.Name) > 0 {
-		body["name"] = input.Name
-	}
-	if len(input.Description) > 0 {
-		body["description"] = input.Description
-	}
 
 	update := bson.M{
-		"$set": body,
+		"$set": input,
 	}
 	after := options.After
 	opt := options.FindOneAndUpdateOptions{

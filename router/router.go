@@ -25,6 +25,8 @@ func SetupRoutes(app *fiber.App) {
 	// Watchlist
 	watchlist := api.Group("/watchlists")
 	watchlist.Get("/", middleware.Protected(), handler.GetWatchlists)
+	watchlist.Post("/", middleware.Protected(), handler.CreateWatchlist)
+	watchlist.Patch("/:id", middleware.Protected(), handler.UpdateWatchlist)
 
 	// Media
 	media := api.Group("/media")

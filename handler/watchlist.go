@@ -71,20 +71,20 @@ func UpdateWatchlist(c *fiber.Ctx) error {
 	}
 
 	token := c.Locals("user").(*jwt.Token)
+	watchlist, err := service.FindWatchlistById(c, id)
 
 	// Validate user is owner of watchlist
-	if !service.ValidToken(token, id) {
+	if !service.ValidToken(token, watchlist.OwnerID) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Unauthorized"})
 	}
 
 	// Update watchlist in database
-	var watchlist model.Watchlist
-	status, err := service.UpdateWatchlist(c, id, input, &watchlist)
+	status, err := service.UpdateWatchlist(c, id, input, watchlist)
 	if err != nil {
 		return c.Status(status).JSON(fiber.Map{"status": "error", "message": err.Error(), "data": err})
 	}
 
-	return c.JSON(fiber.Map{"status": "success", "message": "Updated watchlist", "data": dto.CreateWatchlistResponse(watchlist)})
+	return c.JSON(fiber.Map{"status": "success", "message": "Updated watchlist", "data": dto.CreateWatchlistResponse(*watchlist)})
 }
 
 func DeleteWatchlist(c *fiber.Ctx) error {
