@@ -2,17 +2,18 @@ package service
 
 import (
 	"errors"
+	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/jeffwilkey/watchlist-go/database"
 	"github.com/jeffwilkey/watchlist-go/dto"
 	"github.com/jeffwilkey/watchlist-go/model"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -43,6 +44,9 @@ func CreateUser(c *fiber.Ctx, user *model.User) error {
 		return err
 	}
 
+	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+
 	user.Password = hash
 	insertResult, err := collection.InsertOne(c.Context(), &user)
 	if err != nil {
@@ -62,6 +66,7 @@ func UpdateUser(c *fiber.Ctx, id primitive.ObjectID, input dto.UserUpdateRequest
 	opt := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
 	}
+	update["updatedAt"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 
 	// Update user in database
 	updateResult := collection.FindOneAndUpdate(c.Context(), bson.M{"_id": id}, update, &opt)

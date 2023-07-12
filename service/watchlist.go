@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jeffwilkey/watchlist-go/database"
@@ -44,6 +45,9 @@ func FindWatchlistsByOwnerId(c *fiber.Ctx, ownerId primitive.ObjectID) ([]model.
 
 func CreateWatchlist(c *fiber.Ctx, watchlist *model.Watchlist) error {
 	collection := database.Mongo.Db.Collection("watchlists")
+	watchlist.CreatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	watchlist.UpdatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+
 	insertResult, err := collection.InsertOne(c.Context(), watchlist)
 	if err != nil {
 		return err
@@ -62,6 +66,7 @@ func UpdateWatchlist(c *fiber.Ctx, id primitive.ObjectID, input dto.WatchlistUpd
 	opt := options.FindOneAndUpdateOptions{
 		ReturnDocument: &after,
 	}
+	update["updatedAt"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 
 	updateResult := collection.FindOneAndUpdate(c.Context(), bson.M{"_id": id}, update, &opt)
 	err := updateResult.Err()
