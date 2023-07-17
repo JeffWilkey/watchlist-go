@@ -107,5 +107,11 @@ func DeleteWatchlist(c *fiber.Ctx) error {
 		return c.Status(status).JSON(fiber.Map{"status": "error", "message": err.Error(), "data": err})
 	}
 
+	// Delete all media belonging to watchlist from database
+	err = service.DeleteMediaByWatchlistId(c, id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't delete media", "data": err})
+	}
+
 	return c.Status(status).JSON(fiber.Map{"status": "success", "message": "Deleted watchlist", "data": nil})
 }

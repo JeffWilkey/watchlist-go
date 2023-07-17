@@ -14,7 +14,7 @@ import (
 func GetMediaByWatchlistId(c *fiber.Ctx, watchlistId primitive.ObjectID) ([]model.Media, error) {
 	// Get all media from database
 	collection := database.Mongo.Db.Collection("media")
-	cursor, err := collection.Find(c.Context(), bson.D{{Key: "watchlistId", Value: watchlistId}})
+	cursor, err := collection.Find(c.Context(), bson.M{"watchlistId": watchlistId})
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +39,17 @@ func CreateMedia(c *fiber.Ctx, media *model.Media) error {
 	}
 
 	media.ID = insertResult.InsertedID.(primitive.ObjectID)
+
+	return nil
+}
+
+func DeleteMediaByWatchlistId(c *fiber.Ctx, watchlistId primitive.ObjectID) error {
+	collection := database.Mongo.Db.Collection("media")
+
+	_, err := collection.DeleteMany(c.Context(), bson.M{"watchlistId": watchlistId})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
