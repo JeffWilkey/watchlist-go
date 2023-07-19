@@ -96,8 +96,13 @@ func DeleteWatchlist(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid watchlist id", "data": err})
 	}
 
+	watchlist, err := service.FindWatchlistById(c, id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Couldn't find watchlist", "data": err})
+	}
+
 	// Validate JWT token
-	if !service.ValidToken(token, id) {
+	if !service.ValidToken(token, watchlist.OwnerID) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": nil})
 	}
 
